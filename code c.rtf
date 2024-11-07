@@ -1,176 +1,167 @@
-{\rtf1\ansi\ansicpg1252\cocoartf2761
-\cocoatextscaling0\cocoaplatform0{\fonttbl\f0\froman\fcharset0 Times-Roman;}
-{\colortbl;\red255\green255\blue255;\red0\green0\blue0;}
-{\*\expandedcolortbl;;\cssrgb\c0\c0\c0;}
-\paperw11900\paperh16840\margl1440\margr1440\vieww11520\viewh8400\viewkind0
-\deftab720
-\pard\pardeftab720\partightenfactor0
+#include <stdio.h>
+#include <stdlib.h>
 
-\f0\fs24 \cf0 \expnd0\expndtw0\kerning0
-\outl0\strokewidth0 \strokec2 #include <stdio.h>\
-#include <stdlib.h>\
-\
-#define MAX_PROCESSES 100\
-\
-typedef struct \{\
-    int id;\
-    int resource_need;\
-    int allocated_resources;\
-\} Process;\
-\
-\
-void fifo(Process processes[], int num_processes, int total_resources) \{\
-    printf("Applying FIFO Policy:\\n");\
-    int available_resources = total_resources;\
-    for (int i = 0; i < num_processes; i++) \{\
-        if (available_resources >= processes[i].resource_need) \{\
-            processes[i].allocated_resources = processes[i].resource_need;\
-            available_resources -= processes[i].resource_need;\
-        \} else \{\
-            processes[i].allocated_resources = 0;\
-        \}\
-        printf("Process %d: Need %d, Allocated %d, Remaining resources %d\\n", \
-                processes[i].id, processes[i].resource_need, processes[i].allocated_resources, available_resources);\
-    \}\
-\}\
-\
-/*Fonction fifo :\
-   -Prend en entr\'e9e la liste des processus, le nombre de processus et le total des ressources disponibles.\
-   -Parcourt les processus dans l'ordre d'arriv\'e9e (FIFO).\
-   -Alloue les ressources demand\'e9es si elles sont disponibles.\
-   -Affiche les besoins, les ressources allou\'e9es et les ressources restantes pour chaque processus.*/\
-\
-\
-\
-void lifo(Process processes[], int num_processes, int total_resources) \{\
-    printf("Applying LIFO Policy:\\n");\
-    int available_resources = total_resources;\
-    for (int i = num_processes - 1; i >= 0; i--) \{\
-        if (available_resources >= processes[i].resource_need) \{\
-            processes[i].allocated_resources = processes[i].resource_need;\
-            available_resources -= processes[i].resource_need;\
-        \} else \{\
-            processes[i].allocated_resources = 0;\
-        \}\
-        printf("Process %d: Need %d, Allocated %d, Remaining resources %d\\n", \
-                processes[i].id, processes[i].resource_need, processes[i].allocated_resources, available_resources);\
-    \}\
-\}\
-\
-/* Fonction lifo :\
-   -Prend en entr\'e9e la liste des processus, le nombre de processus et le total des ressources disponibles.\
-   -Parcourt les processus dans l'ordre inverse d'arriv\'e9e (LIFO).\
-   -Alloue les ressources demand\'e9es si elles sont disponibles.\
-   -Affiche les besoins, les ressources allou\'e9es et les ressources restantes pour chaque processus. */\
-\
-\
-\
-void round_robin(Process processes[], int num_processes, int total_resources, int quantum) \{\
-    printf("Applying Round-Robin Policy:\\n");\
-    int available_resources = total_resources;\
-    int all_done;\
-    do \{\
-        all_done = 1;\
-        for (int i = 0; i < num_processes; i++) \{\
-            if (processes[i].resource_need > 0) \{\
-                all_done = 0;\
-                int allocated = (processes[i].resource_need < quantum) ? processes[i].resource_need : quantum;\
-                if (available_resources >= allocated) \{\
-                    processes[i].allocated_resources += allocated;\
-                    processes[i].resource_need -= allocated;\
-                    available_resources -= allocated;\
-                    printf("Process %d: Allocated %d, Remaining need %d, Remaining resources %d\\n", \
-                            processes[i].id, allocated, processes[i].resource_need, available_resources);\
-                \} else \{\
-                    printf("Process %d: Not enough resources to allocate %d\\n", processes[i].id, allocated);\
-                \}\
-            \}\
-        \}\
-    \} while (!all_done);\
-\}\
-\
-/* Fonction detect_deadlock :\
-   -Parcourt la liste des processus pour v\'e9rifier si un processus a encore des besoins en ressources non satisfaits.\
-   -Si un processus a toujours des besoins en ressources, retourne 1 pour indiquer un interblocage.\
-   -Sinon, retourne 0 pour indiquer qu'il n'y a pas d'interblocage. */\
-\
-int detect_deadlock(Process processes[], int num_processes) \{\
-    for (int i = 0; i < num_processes; i++) \{\
-        if (processes[i].resource_need > 0) \{\
-            return 1; \
-        \}\
-    \}\
-    return 0; \
-\}\
-\
-/* Fonction round_robin :\
-   -Prend en entr\'e9e la liste des processus, le nombre de processus, le total des ressources disponibles, et le quantum pour l'allocation par tranches.\
-   -Utilise une boucle do-while pour allouer des ressources par tranches jusqu'\'e0 ce que tous les processus soient satisfaits.\
-   -Alloue des ressources \'e0 chaque processus en respectant le quantum, puis passe au processus suivant.\
-   -Affiche les ressources allou\'e9es, les besoins restants, et les ressources disponibles apr\'e8s chaque allocation. */\
-\
-int main() \{\
-    int num_processes, total_resources, quantum;\
-    Process processes[MAX_PROCESSES];\
-    \
-    printf("Enter the number of processes: ");\
-    scanf("%d", &num_processes);\
-\
-    printf("Enter the total available resources: ");\
-    scanf("%d", &total_resources);\
-\
-    for (int i = 0; i < num_processes; i++) \{\
-        processes[i].id = i + 1;\
-        processes[i].allocated_resources = 0;\
-        printf("Enter the resource need for process %d: ", processes[i].id);\
-        scanf("%d", &processes[i].resource_need);\
-    \}\
-\
-    int choice;\
-    do \{\
-        printf("\\nChoose a scheduling policy:\\n");\
-        printf("1. FIFO\\n");\
-        printf("2. LIFO\\n");\
-        printf("3. Round-Robin\\n");\
-        printf("4. Exit\\n");\
-        printf("Enter your choice: ");\
-        scanf("%d", &choice);\
-        \
-        switch (choice) \{\
-            case 1:\
-                fifo(processes, num_processes, total_resources);\
-                break;\
-            case 2:\
-                lifo(processes, num_processes, total_resources);\
-                break;\
-            case 3:\
-                printf("Enter the quantum for Round-Robin: ");\
-                scanf("%d", &quantum);\
-                round_robin(processes, num_processes, total_resources, quantum);\
-                break;\
-            case 4:\
-                printf("Exiting...\\n");\
-                break;\
-            default:\
-                printf("Invalid choice. Try again.\\n");\
-        \}\
-\
-        if (choice >= 1 && choice <= 3) \{\
-            if (detect_deadlock(processes, num_processes)) \{\
-                printf("Deadlock detected.\\n");\
-            \} else \{\
-                printf("No deadlock.\\n");\
-            \}\
-        \}\
-\
-        \
-        for (int i = 0; i < num_processes; i++) \{\
-            processes[i].allocated_resources = 0;\
-            printf("Enter the resource need for process %d: ", processes[i].id);\
-            scanf("%d", &processes[i].resource_need);\
-        \}\
-\
-    \} while (choice != 4);\
-\
-    return 0;\
-\}}
+#define MAX_PROCESSES 100
+
+typedef struct {
+    int id;
+    int resource_need;
+    int allocated_resources;
+} Process;
+
+
+void fifo(Process processes[], int num_processes, int total_resources) {
+    printf("Applying FIFO Policy:\n");
+    int available_resources = total_resources;
+    for (int i = 0; i < num_processes; i++) {
+        if (available_resources >= processes[i].resource_need) {
+            processes[i].allocated_resources = processes[i].resource_need;
+            available_resources -= processes[i].resource_need;
+        } else {
+            processes[i].allocated_resources = 0;
+        }
+        printf("Process %d: Need %d, Allocated %d, Remaining resources %d\n", 
+                processes[i].id, processes[i].resource_need, processes[i].allocated_resources, available_resources);
+    }
+}
+
+/*Fonction fifo :
+   -Prend en entrée la liste des processus, le nombre de processus et le total des ressources disponibles.
+   -Parcourt les processus dans l'ordre d'arrivée (FIFO).
+   -Alloue les ressources demandées si elles sont disponibles.
+   -Affiche les besoins, les ressources allouées et les ressources restantes pour chaque processus.*/
+
+
+
+void lifo(Process processes[], int num_processes, int total_resources) {
+    printf("Applying LIFO Policy:\n");
+    int available_resources = total_resources;
+    for (int i = num_processes - 1; i >= 0; i--) {
+        if (available_resources >= processes[i].resource_need) {
+            processes[i].allocated_resources = processes[i].resource_need;
+            available_resources -= processes[i].resource_need;
+        } else {
+            processes[i].allocated_resources = 0;
+        }
+        printf("Process %d: Need %d, Allocated %d, Remaining resources %d\n", 
+                processes[i].id, processes[i].resource_need, processes[i].allocated_resources, available_resources);
+    }
+}
+
+/* Fonction lifo :
+   -Prend en entrée la liste des processus, le nombre de processus et le total des ressources disponibles.
+   -Parcourt les processus dans l'ordre inverse d'arrivée (LIFO).
+   -Alloue les ressources demandées si elles sont disponibles.
+   -Affiche les besoins, les ressources allouées et les ressources restantes pour chaque processus. */
+
+
+
+void round_robin(Process processes[], int num_processes, int total_resources, int quantum) {
+    printf("Applying Round-Robin Policy:\n");
+    int available_resources = total_resources;
+    int all_done;
+    do {
+        all_done = 1;
+        for (int i = 0; i < num_processes; i++) {
+            if (processes[i].resource_need > 0) {
+                all_done = 0;
+                int allocated = (processes[i].resource_need < quantum) ? processes[i].resource_need : quantum;
+                if (available_resources >= allocated) {
+                    processes[i].allocated_resources += allocated;
+                    processes[i].resource_need -= allocated;
+                    available_resources -= allocated;
+                    printf("Process %d: Allocated %d, Remaining need %d, Remaining resources %d\n", 
+                            processes[i].id, allocated, processes[i].resource_need, available_resources);
+                } else {
+                    printf("Process %d: Not enough resources to allocate %d\n", processes[i].id, allocated);
+                }
+            }
+        }
+    } while (!all_done);
+}
+
+/* Fonction detect_deadlock :
+   -Parcourt la liste des processus pour vérifier si un processus a encore des besoins en ressources non satisfaits.
+   -Si un processus a toujours des besoins en ressources, retourne 1 pour indiquer un interblocage.
+   -Sinon, retourne 0 pour indiquer qu'il n'y a pas d'interblocage. */
+
+int detect_deadlock(Process processes[], int num_processes) {
+    for (int i = 0; i < num_processes; i++) {
+        if (processes[i].resource_need > 0) {
+            return 1; 
+        }
+    }
+    return 0; 
+}
+
+/* Fonction round_robin :
+   -Prend en entrée la liste des processus, le nombre de processus, le total des ressources disponibles, et le quantum pour l'allocation par tranches.
+   -Utilise une boucle do-while pour allouer des ressources par tranches jusqu'à ce que tous les processus soient satisfaits.
+   -Alloue des ressources à chaque processus en respectant le quantum, puis passe au processus suivant.
+   -Affiche les ressources allouées, les besoins restants, et les ressources disponibles après chaque allocation. */
+
+int main() {
+    int num_processes, total_resources, quantum;
+    Process processes[MAX_PROCESSES];
+    
+    printf("Enter the number of processes: ");
+    scanf("%d", &num_processes);
+
+    printf("Enter the total available resources: ");
+    scanf("%d", &total_resources);
+
+    for (int i = 0; i < num_processes; i++) {
+        processes[i].id = i + 1;
+        processes[i].allocated_resources = 0;
+        printf("Enter the resource need for process %d: ", processes[i].id);
+        scanf("%d", &processes[i].resource_need);
+    }
+
+    int choice;
+    do {
+        printf("\nChoose a scheduling policy:\n");
+        printf("1. FIFO\n");
+        printf("2. LIFO\n");
+        printf("3. Round-Robin\n");
+        printf("4. Exit\n");
+        printf("Enter your choice: ");
+        scanf("%d", &choice);
+        
+        switch (choice) {
+            case 1:
+                fifo(processes, num_processes, total_resources);
+                break;
+            case 2:
+                lifo(processes, num_processes, total_resources);
+                break;
+            case 3:
+                printf("Enter the quantum for Round-Robin: ");
+                scanf("%d", &quantum);
+                round_robin(processes, num_processes, total_resources, quantum);
+                break;
+            case 4:
+                printf("Exiting...\n");
+                break;
+            default:
+                printf("Invalid choice. Try again.\n");
+        }
+
+        if (choice >= 1 && choice <= 3) {
+            if (detect_deadlock(processes, num_processes)) {
+                printf("Deadlock detected.\n");
+            } else {
+                printf("No deadlock.\n");
+            }
+        }
+
+        
+        for (int i = 0; i < num_processes; i++) {
+            processes[i].allocated_resources = 0;
+            printf("Enter the resource need for process %d: ", processes[i].id);
+            scanf("%d", &processes[i].resource_need);
+        }
+
+    } while (choice != 4);
+
+    return 0;
+}
